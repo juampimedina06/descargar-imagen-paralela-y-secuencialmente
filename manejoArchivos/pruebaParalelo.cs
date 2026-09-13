@@ -68,4 +68,3 @@ class DescargadorPrueba
         return new ImagenDescargada { Path = path, Url = url };
     }
 }
-git remote add origin https://github.com/juampimedina06/descargar-imagen-paralela-y-secuencialmente.git
