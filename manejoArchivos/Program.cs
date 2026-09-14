@@ -2,6 +2,6 @@
 {
     static async Task Main()
     {
-        await Descargador.EjecutarParalelo();
+       await Descargar.DescargarTodo();
     }
 }

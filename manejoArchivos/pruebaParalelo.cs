@@ -2,17 +2,15 @@
 using System.Diagnostics;
 using System.Text.Json;
 
-// Toda la lógica de descarga vive acá
-class DescargadorPrueba
+class Descargar
 {
     static HttpClient client = new HttpClient();
 
-    // Método "orquestador": hace todo el trabajo de punta a punta
-    public static async Task EjecutarParalelo()
+    public static async Task DescargarTodo()
     {
-        string rutaParalela = @"C:\Users\Juampi\Downloads\Programacion\c#\paralelo";
-        Directory.CreateDirectory(rutaParalela);
-        string rutaJSON = Path.Combine(rutaParalela, "descargas.json");
+        string DirParalelo = @"C:\Users\Juampi\Downloads\Programacion\c#\paralelo";
+        Directory.CreateDirectory(DirParalelo);
+        string rutaJson = Path.Combine(DirParalelo, "json.Descargas");
         Stopwatch sw = Stopwatch.StartNew();
 
         string[] urls =
@@ -26,37 +24,46 @@ class DescargadorPrueba
 
         sw.Start();
 
-        var descargas = new List<Task<ImagenDescargada>>()
-        {
-            DescargarImagen(rutaParalela, urls[0]),
-            DescargarImagen(rutaParalela, urls[1]),
-            DescargarImagen(rutaParalela, urls[2]),
-            DescargarImagen(rutaParalela, urls[3]),
-            DescargarImagen(rutaParalela, urls[4]),
-        };
+        //var descargas = new List<Task<ImagenDescargada>>()
+        //{
+        //    DescargarImagen(DirParalelo, urls[0]),
+        //    DescargarImagen(DirParalelo, urls[1]),
+        //    DescargarImagen(DirParalelo, urls[2]),
+        //    DescargarImagen(DirParalelo, urls[3]),
+        //    DescargarImagen(DirParalelo, urls[4]),
+        //};
 
-        ImagenDescargada[] resultados = await Task.WhenAll(descargas);
+        //ImagenDescargada[] resultado = await Task.WhenAll(descargas);
+
+        var resultado = new List<ImagenDescargada>();
+        foreach (var url in urls)
+        {
+            ImagenDescargada imagen = await DescargarImagen(DirParalelo, url);
+            resultado.Add(imagen);
+        }
 
         sw.Stop();
-        Console.WriteLine($"descarga paralela terminada en {sw.ElapsedMilliseconds}");
-
-        foreach (var imagen in resultados)
+        foreach (var imagen in resultado)
         {
-            Console.WriteLine($"Imagen paralela con url: {imagen.Url}, y  path:{imagen.Path} ");
+            Console.WriteLine($"imagen con la url: {imagen.Url} y el path:{imagen.Path} ");
         }
 
-        var lista = new List<ImagenDescargada>(resultados);
-        string JsonString = JsonSerializer.Serialize(lista);
-        File.WriteAllText(rutaJSON, JsonString);
-        string JsonLeido = File.ReadAllText(rutaJSON);
-        var imagenDeserealizada = JsonSerializer.Deserialize<List<ImagenDescargada>>(JsonLeido);
+        
+        Console.WriteLine($" Las imagenes se descagaron exitosamente en {sw.ElapsedMilliseconds} ms ");
+
+        var lista = new List<ImagenDescargada>();
+        string StringJson = JsonSerializer.Serialize(resultado);
+        File.WriteAllText(rutaJson, StringJson);
+        string jsonLeido = File.ReadAllText(rutaJson);
+        var imagenDeserealizada = JsonSerializer.Deserialize<List<ImagenDescargada>>(jsonLeido);
         foreach (var imagenJson in imagenDeserealizada)
         {
-            Console.WriteLine($"Imagen convertida a JSON con url: {imagenJson.Url}, y  path:{imagenJson.Path} ");
+            Console.WriteLine($"imagen en json con la url: {imagenJson.Url} y el path:{imagenJson.Path} ");  
         }
+
     }
 
-    // Descarga UNA imagen (usado adentro de EjecutarParalelo)
+
     static async Task<ImagenDescargada> DescargarImagen(string carpeta, string url)
     {
         string nombre = Path.GetFileName(url);
@@ -67,4 +74,9 @@ class DescargadorPrueba
 
         return new ImagenDescargada { Path = path, Url = url };
     }
+
+
 }
+
+
+    
